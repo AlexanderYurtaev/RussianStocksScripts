@@ -101,7 +101,9 @@ def main():
 
     try:
         net_income_input = input("Чистая прибыль (млрд RUB): ").strip()
-        net_income_input = net_income_input.replace(" ", "").replace("_", "")
+        net_income_input = (
+            net_income_input.replace(" ", "").replace("_", "").replace(",", ".")
+        )
         net_income_bln = float(net_income_input)
     except (ValueError, KeyboardInterrupt):
         print("Некорректный ввод. Завершение.")
