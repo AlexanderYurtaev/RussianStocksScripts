@@ -9,3 +9,5 @@ venv/
 # Специфичные для проекта
 .qwen/
 QWEN.md
+
+.DS_Store
