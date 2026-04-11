@@ -1,2 +1,11 @@
+# Python
+__pycache__/
+
+
+# Virtual Environment
+venv/
+
+
+# Специфичные для проекта
 .qwen/
 QWEN.md
