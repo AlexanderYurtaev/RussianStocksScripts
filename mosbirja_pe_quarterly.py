@@ -1,10 +1,13 @@
 """
-График P/E и цены акции Северстали (CHMF) с поквартальной прибылью.
+График P/E и цены акции МосБиржи (MOEX) с поквартальной прибылью.
 
 Как пользоваться:
 1. Внесите чистую прибыль по кварталам в словарь NET_INCOME_BY_QUARTER
    (ключ: (год, квартал), значение: млрд RUB)
 2. Запустите скрипт — всё остальное (цена, акции, график) автоматически.
+
+Источники данных (МСФО):
+https://www.moex.com/s1593
 """
 
 import json
@@ -19,30 +22,31 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
 # =============================================================================
-# Чистая прибыль Северстали по кварталам (млрд RUB, МСФО)
+# Чистая прибыль МосБиржи по кварталам (млрд RUB, МСФО)
 # Ключ: (год, квартал), значение: млрд RUB
 # Заполняйте по мере появления данных из отчётов:
-# https://severstal.com/rus/ir/indicators-reporting/financial-results/
+# https://www.moex.com/s1593
 # =============================================================================
 NET_INCOME_BY_QUARTER = {
-    (2023, 2): 105.27,
-    (2023, 3): 0.0,
-    (2023, 4): 88.6,
-    (2024, 1): 47.41,
-    (2024, 2): 35.9,
-    (2024, 3): 35.01,
-    (2024, 4): 31.22,
-    (2025, 1): 21.07,
-    (2025, 2): 15.67,
-    (2025, 3): 12.99,
-    (2025, 4): -17.74,
+    (2023, 1): 14.30,
+    (2023, 2): 12.14,
+    (2023, 3): 14.28,
+    (2023, 4): 20.00,
+    (2024, 1): 19.35,
+    (2024, 2): 19.50,
+    (2024, 3): 23.03,
+    (2024, 4): 17.00,
+    (2025, 1): 13.00,
+    (2025, 2): 15.00,
+    (2025, 3): 17.20,
+    (2025, 4): 14.10,
     # Добавляйте новые кварталы сюда:
     # (2026, 1): XX.X,
 }
 
 # Акции в обращении — загружаются автоматически с Moex ISS.
 # Если не загрузятся, используется запасное значение:
-SHARES_OUTSTANDING_FALLBACK = 837_718_660
+SHARES_OUTSTANDING_FALLBACK = 2_276_000_000
 
 # Целевой P/E
 TARGET_PE = 7
@@ -54,7 +58,7 @@ END_DATE = "2026-04-15"
 
 def fetch_shares_outstanding():
     """Получить количество акций в обращении с Moex ISS."""
-    url = "https://iss.moex.com/iss/engines/stock/markets/shares/securities/CHMF.json"
+    url = "https://iss.moex.com/iss/engines/stock/markets/shares/securities/MOEX.json"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with urllib.request.urlopen(req, timeout=15) as response:
@@ -121,10 +125,10 @@ def get_ttm_net_income(dt):
 
 
 def fetch_history():
-    """Получить ВСЕ исторические цены CHMF с Moex ISS (с пагинацией)."""
+    """Получить ВСЕ исторические цены MOEX с Moex ISS (с пагинацией)."""
     base_url = (
         f"https://iss.moex.com/iss/history/engines/stock/markets/shares"
-        f"/securities/CHMF.json?from={START_DATE}&til={END_DATE}&board=TQBR"
+        f"/securities/MOEX.json?from={START_DATE}&til={END_DATE}&board=TQBR"
     )
     all_rows = []
     columns = None
@@ -200,7 +204,7 @@ def plot_chart(dates, closes, pe_values, ttm_values, output_path):
     color_price = "#1f77b4"
     ax1.set_xlabel("Дата", fontsize=12)
     ax1.set_ylabel("Цена акции (RUB)", color=color_price, fontsize=12)
-    ax1.plot(dates, closes, color=color_price, linewidth=1.5, label="Цена CHMF")
+    ax1.plot(dates, closes, color=color_price, linewidth=1.5, label="Цена MOEX")
     ax1.tick_params(axis="y", labelcolor=color_price)
     ax1.grid(True, alpha=0.3)
     ax1.legend(loc="upper left")
@@ -231,7 +235,7 @@ def plot_chart(dates, closes, pe_values, ttm_values, output_path):
         f"  {y}Q{q}: {v} млрд" for (y, q), v in sorted(NET_INCOME_BY_QUARTER.items())
     )
     plt.title(
-        f"Северсталь (CHMF) — Цена и P/E (TTM)\n"
+        f"МосБиржа (MOEX) — Цена и P/E (TTM)\n"
         f"{START_DATE[:7]} → {END_DATE[:7]}\n"
         f"Квартальная прибыль:\n{q_info}",
         fontsize=11,
@@ -270,7 +274,7 @@ def main():
 
     output_path = os.path.join(
         os.path.dirname(os.path.abspath(__file__)),
-        "severstal_pe_quarterly.png",
+        "mosbirja_pe_quarterly.png",
     )
     print("Построение графика...")
     plot_chart(dates, closes, pe_values, ttm_values, output_path)
